@@ -1,0 +1,26 @@
+-- auto-generated definition
+create table plata
+(
+    pid  serial,
+    cnp  varchar,
+    suma double precision,
+    data varchar
+);
+
+-- auto-generated definition
+create table programare
+(
+    pid           serial
+        constraint programare_pk
+            primary key,
+    cnp           varchar,
+    data          varchar,
+    locatie       varchar,
+    tip_tratament varchar,
+    ora           varchar,
+    nume          varchar
+);
+
+alter table programare
+    owner to postgres;
+
