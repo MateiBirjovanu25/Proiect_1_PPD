@@ -3,10 +3,9 @@ package server;
 import repository.AppointmentRepository;
 import repository.PaymentRepository;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,11 +14,24 @@ public class Server {
     private static ExecutorService executorService;
     private static PaymentRepository paymentRepository;
     private static AppointmentRepository appointmentRepository;
+    private static List<Double> listCosturi;
+    private static List<Double> listDurata;
+    private static Map<AbstractMap.SimpleEntry<Integer, Integer>, Integer> mapLocuriLibere;
+    private static int p = 10;
+    private static int nrClienti = 10;
+    private static int nrTratamente = 5;
+    private static int nrLocatii = 5;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
+
         int portNumber = Integer.parseInt(args[0]);
         boolean listening = true;
         executorService = Executors.newCachedThreadPool();
+
+        loadTratamente();
+//        listCosturi.forEach(System.out::println);
+//        listDurata.forEach(System.out::println);
+//        mapLocuriLibere.values().forEach(System.out::println);
 
         var properties = new Properties();
         FileInputStream fileInputStream = null;
@@ -40,6 +52,40 @@ public class Server {
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);
             System.exit(-1);
+        }
+    }
+
+    private static void loadTratamente() throws FileNotFoundException {
+        listCosturi = new ArrayList<>();
+        listDurata = new ArrayList<>();
+        mapLocuriLibere = new HashMap<>();
+
+        Scanner scanner = new Scanner(new File("src/main/resources/date_tratemente"));
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String type = line.split(":")[0];
+            String[] elements = line.split(":")[1].split(",");
+            if (type.equals("costuri")) {
+                for (String elem : elements) {
+                    listCosturi.add(Double.parseDouble(elem));
+                }
+            } else if (type.equals("durate")) {
+                for (String elem : elements) {
+                    listDurata.add(Double.parseDouble(elem));
+                }
+            } else {
+                int currentIndex = 1;
+                for (String elem : elements) {
+                    mapLocuriLibere.put(new AbstractMap.SimpleEntry<>(1, currentIndex), Integer.parseInt(elem));
+                    currentIndex++;
+                }
+                for (int i = 2; i <= nrLocatii; i++) {
+                    for (int j = 1; j <= nrTratamente; j++) {
+                        int newValue = mapLocuriLibere.get(new AbstractMap.SimpleEntry<>(1, j)) * (i-1);
+                        mapLocuriLibere.put(new AbstractMap.SimpleEntry<>(i, j), newValue);
+                    }
+                }
+            }
         }
     }
 }
