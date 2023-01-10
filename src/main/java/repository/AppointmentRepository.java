@@ -32,12 +32,12 @@ public class AppointmentRepository implements Repository<Long, Appointment>{
             while (resultSet.next())
             {
                 Appointment appointment = new Appointment(
+                        resultSet.getString("nume"),
                         resultSet.getString("cnp"),
                         resultSet.getString("data"),
                         resultSet.getString("locatie"),
                         resultSet.getString("tip_tratament"),
-                        resultSet.getString("ora"),
-                        resultSet.getString("nume"));
+                        resultSet.getString("ora"));
                 appointment.setId(resultSet.getLong("pid"));
                 appoinments.add(appointment);
             }
