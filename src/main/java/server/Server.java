@@ -1,5 +1,7 @@
 package server;
 
+import domain.Appointment;
+import domain.Payment;
 import repository.AppointmentRepository;
 import repository.PaymentRepository;
 
@@ -47,7 +49,7 @@ public class Server {
         System.out.println("waiting for clients");
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (listening) {
-                executorService.submit(new ServerThread(serverSocket.accept(), appointmentRepository, paymentRepository));
+                executorService.submit(new ServerThread(serverSocket.accept(), appointmentRepository, paymentRepository, listCosturi));
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);

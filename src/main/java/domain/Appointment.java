@@ -17,6 +17,16 @@ public class Appointment extends Entity<Long>{
         this.hour = hour;
     }
 
+    public Appointment(Long id, String name, String cnp, String date, String location, String treatment_type, String hour) {
+        setId(id);
+        this.name = name;
+        this.cnp = cnp;
+        this.date = date;
+        this.location = location;
+        this.treatment_type = treatment_type;
+        this.hour = hour;
+    }
+
     public String getName() {
         return name;
     }
@@ -39,5 +49,17 @@ public class Appointment extends Entity<Long>{
 
     public String getHour() {
         return hour;
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "name='" + name + '\'' +
+                ", cnp='" + cnp + '\'' +
+                ", date='" + date + '\'' +
+                ", location='" + location + '\'' +
+                ", treatment_type='" + treatment_type + '\'' +
+                ", hour='" + hour + '\'' +
+                '}';
     }
 }

@@ -10,16 +10,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
 public class ServerThread implements Runnable {
+    private final List<Double> costList;
     private Socket socket;
     AppointmentRepository appointmentRepository;
     PaymentRepository paymentRepository;
 
-    public ServerThread(Socket socket, AppointmentRepository appointmentRepository, PaymentRepository paymentRepository) {
+    public ServerThread(Socket socket, AppointmentRepository appointmentRepository, PaymentRepository paymentRepository, List<Double> costList) {
         this.socket = socket;
         this.appointmentRepository = appointmentRepository;
         this.paymentRepository = paymentRepository;
+        this.costList = costList;
     }
 
     @Override
@@ -71,5 +75,18 @@ public class ServerThread implements Runnable {
         String cnp = elements[2];
         double suma = Double.parseDouble(elements[3]);
         paymentRepository.save(new Payment(data, cnp, suma));
+    }
+
+    private void handleCancel(String input) {
+        // input == "appointment_id"
+        Long appointment_id = Long.valueOf(input);
+        Appointment appointment =
+                StreamSupport
+                .stream(appointmentRepository.findAll().spliterator(), false)
+                .filter(x -> x.getId().equals(appointment_id))
+                .findFirst()
+                .get();
+        paymentRepository.save(new Payment(appointment.getDate(), appointment.getCnp(), costList.get(Integer.parseInt(appointment.getTreatment_type()))));
+        appointmentRepository.delete(appointment_id);
     }
 }
