@@ -103,8 +103,11 @@ public class ServerThread implements Runnable {
         String[] elements = input.split("\\|");
         String data = elements[1];
         String cnp = elements[2];
-        double suma = Double.parseDouble(elements[3]);
-        paymentRepository.save(new Payment(data, cnp, suma));
+        var idProgramare = Integer.parseInt(elements[3]);
+        try {
+            var app = StreamSupport.stream(appointmentRepository.findAll().spliterator(), false).filter(x -> x.getId() == idProgramare).findFirst().get();
+            paymentRepository.save(new Payment(data, cnp, costList.get(Integer.parseInt(app.getTreatment_type())), app));
+        } catch (Exception ignored) {}
         manager.decrementUsers();
         return "success";
     }
