@@ -49,7 +49,7 @@ public class Server {
         System.out.println("waiting for clients");
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (listening) {
-                executorService.submit(new ServerThread(serverSocket.accept(), appointmentRepository, paymentRepository, listCosturi));
+                executorService.submit(new ServerThread(serverSocket.accept(), appointmentRepository, paymentRepository, listCosturi, listDurata, mapLocuriLibere));
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);
