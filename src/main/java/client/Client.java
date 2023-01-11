@@ -73,7 +73,6 @@ public class Client {
 
             if (rand.nextDouble() > 0.5) {
                 commandString = "anulare|";
-
                 try (
                         Socket socket = new Socket(hostName, portNumber);
                         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
