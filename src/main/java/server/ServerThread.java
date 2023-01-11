@@ -18,16 +18,18 @@ public class ServerThread implements Runnable {
     private final List<Double> durationList;
     private Map<AbstractMap.SimpleEntry<Integer, Integer>, Integer> mapLocuriLibere;
     private Socket socket;
+    private Manager manager;
     AppointmentRepository appointmentRepository;
     PaymentRepository paymentRepository;
 
-    public ServerThread(Socket socket, AppointmentRepository appointmentRepository, PaymentRepository paymentRepository, List<Double> costList, List<Double> durationList, Map<AbstractMap.SimpleEntry<Integer, Integer>, Integer> mapLocuriLibere) {
+    public ServerThread(Socket socket, AppointmentRepository appointmentRepository, PaymentRepository paymentRepository, List<Double> costList, List<Double> durationList, Map<AbstractMap.SimpleEntry<Integer, Integer>, Integer> mapLocuriLibere, Manager manager) {
         this.socket = socket;
         this.appointmentRepository = appointmentRepository;
         this.paymentRepository = paymentRepository;
         this.costList = costList;
         this.durationList = durationList;
         this.mapLocuriLibere = mapLocuriLibere;
+        this.manager = manager;
     }
 
     @Override
@@ -65,6 +67,7 @@ public class ServerThread implements Runnable {
     }
 
     private String handleProgramare(String input) {
+        manager.incrementUsers();
         String[] elements = input.split("\\|");
         String nume = elements[1];
         String cnp = elements[2];
@@ -73,7 +76,13 @@ public class ServerThread implements Runnable {
         String tipTratament = elements[5];
         String oraStart = elements[6];
         String oraFinish = elements[7];
-
+        System.out.println("ACUM ASTEPT AICI.");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("ACUM AM TERMINAT DE ASTEPTAT AICI.");
         String checkResult =
                 checkInterval(Integer.parseInt(oraStart), Integer.parseInt(oraFinish),locatie, tipTratament,
                         (int)(double)durationList.get(Integer.parseInt(tipTratament)),
@@ -81,23 +90,28 @@ public class ServerThread implements Runnable {
 
         if (!Objects.equals(checkResult, "")) {
             var entity = appointmentRepository.save(new Appointment(nume, cnp, data, locatie, tipTratament, checkResult));
+            manager.decrementUsers();
             return entity.get().getId().toString();
         } else {
+            manager.decrementUsers();
             return "-1";
         }
     }
 
     private String handlePlata(String input) {
+        manager.incrementUsers();
         String[] elements = input.split("\\|");
         String data = elements[1];
         String cnp = elements[2];
         double suma = Double.parseDouble(elements[3]);
         paymentRepository.save(new Payment(data, cnp, suma));
+        manager.decrementUsers();
         return "success";
     }
 
     private String handleCancel(String input) {
         // input == "appointment_id"
+        manager.incrementUsers();
         Long appointment_id = Long.valueOf(input.strip().split("\\|")[1]);
         Appointment appointment =
                 StreamSupport
@@ -107,6 +121,7 @@ public class ServerThread implements Runnable {
                 .get();
         paymentRepository.save(new Payment(appointment.getDate(), appointment.getCnp(), costList.get(Integer.parseInt(appointment.getTreatment_type()))));
         appointmentRepository.delete(appointment_id);
+        manager.decrementUsers();
         return "success";
     }
 

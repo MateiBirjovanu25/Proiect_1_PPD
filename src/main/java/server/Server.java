@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
@@ -19,6 +20,7 @@ public class Server {
     private static List<Double> listCosturi;
     private static List<Double> listDurata;
     private static Map<AbstractMap.SimpleEntry<Integer, Integer>, Integer> mapLocuriLibere;
+    private static Manager manager;
     private static int p = 10;
     private static int nrClienti = 10;
     private static int nrTratamente = 5;
@@ -45,11 +47,25 @@ public class Server {
         }
         paymentRepository = new PaymentRepository(properties.getProperty("url"), properties.getProperty("username"), properties.getProperty("password"));
         appointmentRepository = new AppointmentRepository(properties.getProperty("url"), properties.getProperty("username"), properties.getProperty("password"));
+        manager = new Manager(appointmentRepository, paymentRepository, listCosturi, listDurata, mapLocuriLibere);
 
+        System.out.println("Start verifier.");
+        executorService.submit(() -> {
+            var verificationTime = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS);
+            while (listening) {
+                try {
+                    Thread.sleep(verificationTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                var message = manager.verify();
+                System.out.println(message + "\n");
+            }
+        });
         System.out.println("waiting for clients");
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (listening) {
-                executorService.submit(new ServerThread(serverSocket.accept(), appointmentRepository, paymentRepository, listCosturi, listDurata, mapLocuriLibere));
+                executorService.submit(new ServerThread(serverSocket.accept(), appointmentRepository, paymentRepository, listCosturi, listDurata, mapLocuriLibere, manager));
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);
