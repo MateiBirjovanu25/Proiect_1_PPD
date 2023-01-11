@@ -48,6 +48,9 @@ public class ServerThread implements Runnable {
                 } else if (inputLine.split("\\|")[0].equals("plata")) {
                     System.out.println("plata");
                     outputLine = handlePlata(inputLine);
+                } else if (inputLine.split("\\|")[0].equals("anulare")) {
+                    System.out.println("anulare");
+                    outputLine = handleCancel(inputLine);
                 } else {
                     System.out.println("unknown command");
                 }
@@ -93,9 +96,9 @@ public class ServerThread implements Runnable {
         return "success";
     }
 
-    private void handleCancel(String input) {
+    private String handleCancel(String input) {
         // input == "appointment_id"
-        Long appointment_id = Long.valueOf(input);
+        Long appointment_id = Long.valueOf(input.strip().split("\\|")[1]);
         Appointment appointment =
                 StreamSupport
                 .stream(appointmentRepository.findAll().spliterator(), false)
@@ -104,6 +107,7 @@ public class ServerThread implements Runnable {
                 .get();
         paymentRepository.save(new Payment(appointment.getDate(), appointment.getCnp(), costList.get(Integer.parseInt(appointment.getTreatment_type()))));
         appointmentRepository.delete(appointment_id);
+        return "success";
     }
 
     String checkInterval(int startingHour, int finishingHour, String location, String treatmentType, int duration, int max) {
