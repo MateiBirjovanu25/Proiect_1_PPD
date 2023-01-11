@@ -77,10 +77,10 @@ public class ServerThread implements Runnable {
                         mapLocuriLibere.get(new AbstractMap.SimpleEntry<>(Integer.parseInt(locatie), Integer.parseInt(tipTratament))));
 
         if (!Objects.equals(checkResult, "")) {
-            appointmentRepository.save(new Appointment(nume, cnp, data, locatie, tipTratament, checkResult));
-            return "success";
+            var entity = appointmentRepository.save(new Appointment(nume, cnp, data, locatie, tipTratament, checkResult));
+            return entity.get().getId().toString();
         } else {
-            return "fail";
+            return "-1";
         }
     }
 
