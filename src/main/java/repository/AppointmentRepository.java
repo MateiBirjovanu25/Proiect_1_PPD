@@ -51,12 +51,14 @@ public class AppointmentRepository implements Repository<Long, Appointment>{
     @Override
     public Optional<Appointment> save(Appointment entity) {
         String sqlString = "insert into programare(cnp,data,locatie,tip_tratament,ora,nume) " +
-                "values ('%s', '%s', '%s', '%s', '%s', '%s');";
+                "values ('%s', '%s', '%s', '%s', '%s', '%s') returning pid;";
         String sql = String
                 .format(sqlString, entity.getCnp(), entity.getDate(), entity.getLocation(),
                         entity.getTreatment_type(), entity.getHour(), entity.getName());
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            connection.createStatement().executeQuery(sql);
+            var resultSet = connection.createStatement().executeQuery(sql);
+            if(resultSet.next())
+                entity.setId(resultSet.getLong("pid"));
         } catch (SQLException error) {
             if(error.getMessage().contains("No results"))
                 return Optional.empty();
