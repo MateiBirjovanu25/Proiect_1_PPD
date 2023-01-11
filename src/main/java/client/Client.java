@@ -40,9 +40,11 @@ public class Client {
                 String locatie = stdIn.readLine();
                 System.out.println("tip tratament: ");
                 String tipTratament = stdIn.readLine();
-                System.out.println("ora: ");
-                String ora = stdIn.readLine();
-                commandString += nume + "|" + cnp + "|" + data + "|" + locatie + "|" + tipTratament + "|" + ora;
+                System.out.println("ora start: ");
+                String oraStart = stdIn.readLine();
+                System.out.println("ora finish: ");
+                String oraFinish = stdIn.readLine();
+                commandString += nume + "|" + cnp + "|" + data + "|" + locatie + "|" + tipTratament + "|" + oraStart + "|" + oraFinish;
             } else if (Objects.equals(command, "plata")) {
                 System.out.println("data: ");
                 String data = stdIn.readLine();

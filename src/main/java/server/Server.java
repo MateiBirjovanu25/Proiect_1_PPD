@@ -59,7 +59,9 @@ public class Server {
 
     private static void loadTratamente() throws FileNotFoundException {
         listCosturi = new ArrayList<>();
+        listCosturi.add(0.0);
         listDurata = new ArrayList<>();
+        listDurata.add(0.0);
         mapLocuriLibere = new HashMap<>();
 
         Scanner scanner = new Scanner(new File("src/main/resources/date_tratemente"));
