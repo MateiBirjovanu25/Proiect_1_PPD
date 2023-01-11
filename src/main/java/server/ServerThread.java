@@ -68,43 +68,48 @@ public class ServerThread implements Runnable {
 
     private String handleProgramare(String input) {
         manager.incrementUsers();
-        String[] elements = input.split("\\|");
-        String nume = elements[1];
-        String cnp = elements[2];
-        String data = elements[3];
-        String locatie = elements[4];
-        String tipTratament = elements[5];
-        String oraStart = elements[6];
-        String oraFinish = elements[7];
-        System.out.println("ACUM ASTEPT AICI.");
         try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("ACUM AM TERMINAT DE ASTEPTAT AICI.");
-        String checkResult =
-                checkInterval(Integer.parseInt(oraStart), Integer.parseInt(oraFinish),locatie, tipTratament,
-                        (int)(double)durationList.get(Integer.parseInt(tipTratament)),
-                        mapLocuriLibere.get(new AbstractMap.SimpleEntry<>(Integer.parseInt(locatie), Integer.parseInt(tipTratament))));
+            String[] elements = input.split("\\|");
+            String nume = elements[1];
+            String cnp = elements[2];
+            String data = elements[3];
+            String locatie = elements[4];
+            String tipTratament = elements[5];
+            String oraStart = elements[6];
+            String oraFinish = elements[7];
+            System.out.println("ACUM ASTEPT AICI.");
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("ACUM AM TERMINAT DE ASTEPTAT AICI.");
+            String checkResult =
+                    checkInterval(Integer.parseInt(oraStart), Integer.parseInt(oraFinish), locatie, tipTratament,
+                            (int) (double) durationList.get(Integer.parseInt(tipTratament)),
+                            mapLocuriLibere.get(new AbstractMap.SimpleEntry<>(Integer.parseInt(locatie), Integer.parseInt(tipTratament))));
 
-        if (!Objects.equals(checkResult, "")) {
-            var entity = appointmentRepository.save(new Appointment(nume, cnp, data, locatie, tipTratament, checkResult));
-            manager.decrementUsers();
-            return entity.get().getId().toString();
-        } else {
-            manager.decrementUsers();
-            return "-1";
+            if (!Objects.equals(checkResult, "")) {
+                var entity = appointmentRepository.save(new Appointment(nume, cnp, data, locatie, tipTratament, checkResult));
+                manager.decrementUsers();
+                return entity.get().getId().toString();
+            } else {
+                manager.decrementUsers();
+                return "-1";
+            }
+        } catch (Exception exception) {
         }
+        manager.decrementUsers();
+        return "-1";
     }
 
     private String handlePlata(String input) {
         manager.incrementUsers();
-        String[] elements = input.split("\\|");
-        String data = elements[1];
-        String cnp = elements[2];
-        var idProgramare = Integer.parseInt(elements[3]);
         try {
+            String[] elements = input.split("\\|");
+            String data = elements[1];
+            String cnp = elements[2];
+            var idProgramare = Integer.parseInt(elements[3]);
             var app = StreamSupport.stream(appointmentRepository.findAll().spliterator(), false).filter(x -> x.getId() == idProgramare).findFirst().get();
             paymentRepository.save(new Payment(data, cnp, costList.get(Integer.parseInt(app.getTreatment_type())), app));
         } catch (Exception ignored) {}
@@ -115,15 +120,17 @@ public class ServerThread implements Runnable {
     private String handleCancel(String input) {
         // input == "appointment_id"
         manager.incrementUsers();
-        Long appointment_id = Long.valueOf(input.strip().split("\\|")[1]);
-        Appointment appointment =
-                StreamSupport
-                .stream(appointmentRepository.findAll().spliterator(), false)
-                .filter(x -> x.getId().equals(appointment_id))
-                .findFirst()
-                .get();
-        paymentRepository.save(new Payment(appointment.getDate(), appointment.getCnp(), costList.get(Integer.parseInt(appointment.getTreatment_type()))));
-        appointmentRepository.delete(appointment_id);
+        try {
+            Long appointment_id = Long.valueOf(input.strip().split("\\|")[1]);
+            Appointment appointment =
+                    StreamSupport
+                            .stream(appointmentRepository.findAll().spliterator(), false)
+                            .filter(x -> x.getId().equals(appointment_id))
+                            .findFirst()
+                            .get();
+            paymentRepository.save(new Payment(appointment.getDate(), appointment.getCnp(), costList.get(Integer.parseInt(appointment.getTreatment_type()))));
+            appointmentRepository.delete(appointment_id);
+        } catch (Exception exception) {}
         manager.decrementUsers();
         return "success";
     }
